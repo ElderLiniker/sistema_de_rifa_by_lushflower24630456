@@ -1,0 +1,48 @@
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Rifa</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Rifa 00-99</h1>
+  <div id="rifa-container">
+    <!-- Números da rifa serão gerados aqui -->
+  </div>
+
+  <div id="reserva-form" style="display: none;">
+    <h2>Reservar Números</h2>
+    <label for="nome">Seu Nome:</label>
+    <input type="text" id="nome" name="nome"><br><br>
+    
+    <label for="numeros">Números a reservar (separados por vírgula):</label>
+    <input type="text" id="numeros" name="numeros"><br><br>
+
+    <button onclick="reservarNumeros()">Reservar</button>
+    <button onclick="fecharFormulario()">Cancelar</button>
+  </div>
+
+  <!-- Área de administração -->
+  <button onclick="mostrarLoginAdmin()">Área de Administração</button>
+
+  <div id="admin-login" style="display: none;">
+    <h2>Login Administrativo</h2>
+    <label for="senha-admin">Senha:</label>
+    <input type="password" id="senha-admin"><br><br>
+    <button onclick="fazerLoginAdmin()">Entrar</button>
+  </div>
+
+  <div id="admin-area" style="display: none;">
+    <h2>Área Administrativa</h2>
+    <button onclick="sairAdmin()">Sair da Área Admin</button>
+    <button onclick="limparRifa()">Limpar Rifa</button>
+    <h3>Números Reservados</h3>
+    <table id="tabela-reservas">
+      <!-- Tabela de reservas será gerada aqui -->
+    </table>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

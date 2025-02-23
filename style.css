@@ -1,0 +1,74 @@
+body {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+#rifa-container {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr); /* 10 colunas */
+  gap: 5px;
+  max-width: 600px;
+  margin: 20px auto;
+}
+
+.numero {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  position: relative; /* Para posicionar o nomeSpan */
+}
+
+.numero.reservado {
+  background-color: #ddd;
+  cursor: not-allowed;
+}
+
+.numero.pago {
+  background-color: green;
+  color: white;
+}
+
+.numero span {
+  display: block; /* Para o nome ficar abaixo do número */
+  font-size: 0.8em;
+}
+
+#reserva-form {
+  max-width: 300px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+#reserva-form label, #reserva-form input {
+  display: block;
+  margin-bottom: 5px;
+}
+
+/* Estilos para a área de administração */
+#admin-login, #admin-area {
+  max-width: 400px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+#admin-area table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+#admin-area th, #admin-area td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+#admin-area th {
+  background-color: #f2f2f2;
+}
