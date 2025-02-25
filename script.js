@@ -1,42 +1,54 @@
-document.addEventListener('DOMContentLoaded', function() {
-  // Recupera os dados salvos no localStorage
-  const savedNumerosReservados = localStorage.getItem('numerosReservados');
-  if (savedNumerosReservados) {
-    numerosReservados = JSON.parse(savedNumerosReservados);
-  }
-
-  const savedAdminLogado = localStorage.getItem('adminLogado');
-  if (savedAdminLogado) {
-    adminLogado = JSON.parse(savedAdminLogado);
-    if (adminLogado) {
-      document.getElementById('admin-login').style.display = 'none';
-      document.getElementById('admin-area').style.display = 'block';
-      atualizarAreaAdmin();
-    }
-  }
-
+document.addEventListener('DOMContentLoaded', async function () {
+  await carregarReservas();
   gerarRifa();
 });
 
-let numerosReservados = {}; // Objeto para armazenar os números reservados e os nomes
-let numerosSelecionados = []; // Array para armazenar os números selecionados
-let adminLogado = false; // Variável para verificar se o admin está logado
+async function carregarReservas() {
+  try {
+    const response = await fetch('http://localhost:3000/reservas');
+    const data = await response.json();
+    numerosReservados = {};
+    data.forEach(reserva => {
+      numerosReservados[reserva.numero] = { nome: reserva.nome, pago: reserva.pago };
+    });
+    atualizarRifaContainer();
+  } catch (error) {
+    console.error('Erro ao carregar reservas:', error);
+  }
+}
+
+let numerosReservados = {};
+let numerosSelecionados = [];
+let adminLogado = false;
 
 function gerarRifa() {
   const rifaContainer = document.getElementById('rifa-container');
-  rifaContainer.innerHTML = ''; // Limpa qualquer conteúdo existente
-
+  rifaContainer.innerHTML = '';
   for (let i = 0; i < 100; i++) {
     const numeroDiv = document.createElement('div');
     numeroDiv.classList.add('numero');
-    numeroDiv.dataset.numero = i.toString().padStart(2, '0'); // Garante dois dígitos
-    numeroDiv.textContent = i.toString().padStart(2, '0'); // Garante dois dígitos
+    numeroDiv.dataset.numero = i.toString().padStart(2, '0');
+    numeroDiv.textContent = i.toString().padStart(2, '0');
+
+    // Exibe o nome da pessoa ao lado do número
+    if (numerosReservados[i.toString().padStart(2, '0')]) {
+      const nomePessoa = numerosReservados[i.toString().padStart(2, '0')].nome;
+      numeroDiv.textContent += ` - ${nomePessoa}`;
+    }
+
+    // Verifica se o número foi reservado e marca a cor
+    if (numerosReservados[i.toString().padStart(2, '0')]) {
+      numeroDiv.classList.add('reservado');
+      if (numerosReservados[i.toString().padStart(2, '0')].pago) {
+        numeroDiv.classList.add('pago');
+      }
+    }
+
     numeroDiv.addEventListener('click', function() {
-      selecionarNumero(i.toString().padStart(2, '0')); // Passa o número com dois dígitos
+      selecionarNumero(i.toString().padStart(2, '0'));
     });
     rifaContainer.appendChild(numeroDiv);
   }
-
   atualizarRifaContainer();
 }
 
@@ -47,14 +59,12 @@ function selecionarNumero(numero) {
   }
 
   if (numerosSelecionados.includes(numero)) {
-    // Se já está selecionado, remove da lista
     numerosSelecionados = numerosSelecionados.filter(num => num !== numero);
     const numeroDiv = document.querySelector(`.numero[data-numero="${numero}"]`);
     if (numeroDiv) {
       numeroDiv.classList.remove('selecionado');
     }
   } else {
-    // Se não está selecionado, adiciona à lista
     numerosSelecionados.push(numero);
     const numeroDiv = document.querySelector(`.numero[data-numero="${numero}"]`);
     if (numeroDiv) {
@@ -62,76 +72,74 @@ function selecionarNumero(numero) {
     }
   }
 
-  // Atualiza o campo de números no formulário
   document.getElementById('numeros').value = numerosSelecionados.join(', ');
   document.getElementById('reserva-form').style.display = 'block';
 }
 
-function reservarNumeros() {
+async function reservarNumeros() {
   const nome = document.getElementById('nome').value;
-  let numeros = document.getElementById('numeros').value;
-
-  // Divide a string de números em um array
-  numeros = numeros.split(',').map(num => num.trim());
+  let numeros = document.getElementById('numeros').value.split(',').map(num => num.trim());
 
   if (!nome) {
     alert('Por favor, insira seu nome.');
     return;
   }
 
-  for (const numero of numeros) {
-    if (numerosReservados[numero] && !numerosReservados[numero].pago) {
-      alert(`O número ${numero} já está reservado.`);
-      return;
+  try {
+    const response = await fetch('http://localhost:3000/reservas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ numeros, nome }),
+    });
+
+    if (response.ok) {
+      alert('Reserva feita com sucesso!');
+      await carregarReservas();
+    } else {
+      alert('Erro ao reservar números.');
     }
-    numerosReservados[numero] = { nome: nome, pago: false };
-
-    const numeroDiv = document.querySelector(`.numero[data-numero="${numero}"]`);
-    if (numeroDiv) {
-      numeroDiv.classList.remove('selecionado'); // Remove a classe de selecionado
-      numeroDiv.classList.add('reservado');
-    }
+  } catch (error) {
+    console.error('Erro ao reservar números:', error);
   }
-
-  document.getElementById('reserva-form').style.display = 'none';
-  document.getElementById('nome').value = '';
-  document.getElementById('numeros').value = '';
-  numerosSelecionados = []; // Limpa a lista de números selecionados
-
-  // Atualiza a área de administração se o admin estiver logado
-  if (adminLogado) {
-    atualizarAreaAdmin();
-  }
-  atualizarRifaContainer();
-  salvarDados();
 }
 
 function fecharFormulario() {
   document.getElementById('reserva-form').style.display = 'none';
-  numerosSelecionados = []; // Limpa a lista de números selecionados
-  // Remove a classe 'selecionado' dos números
+  numerosSelecionados = [];
   const elementosSelecionados = document.querySelectorAll('.numero.selecionado');
   elementosSelecionados.forEach(elemento => {
     elemento.classList.remove('selecionado');
   });
 }
 
-// Funcionalidade da área de administração
 function mostrarLoginAdmin() {
   document.getElementById('admin-login').style.display = 'block';
 }
 
 function fazerLoginAdmin() {
   const senha = document.getElementById('senha-admin').value;
-  if (senha === 'admin123') {
-    adminLogado = true;
-    document.getElementById('admin-login').style.display = 'none';
-    document.getElementById('admin-area').style.display = 'block';
-    atualizarAreaAdmin();
-    salvarDados();
-  } else {
-    alert('Senha incorreta.');
-  }
+
+  // Verificar a senha através de uma requisição de API
+  fetch('http://localhost:3000/admin/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ senha }),
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.sucesso) {
+      adminLogado = true;
+      document.getElementById('admin-login').style.display = 'none';
+      document.getElementById('admin-area').style.display = 'block';
+      atualizarAreaAdmin();
+      salvarDados();
+    } else {
+      alert('Senha incorreta.');
+    }
+  })
+  .catch(error => {
+    console.error('Erro ao fazer login:', error);
+  });
 }
 
 function sairAdmin() {
@@ -150,33 +158,40 @@ function limparRifa() {
   }
 }
 
-function marcarComoPago(numero) {
-  numerosReservados[numero].pago = !numerosReservados[numero].pago;
-  atualizarAreaAdmin();
-  atualizarNumeroDiv(numero);
-  atualizarRifaContainer();
-  salvarDados();
+async function marcarComoPago(numero) {
+  try {
+    const response = await fetch(`http://localhost:3000/reservas/${numero}/pago`, { method: 'PUT' });
+    if (response.ok) {
+      // Atualiza a interface para refletir que o número foi marcado como pago
+      const numeroDiv = document.querySelector(`.numero[data-numero="${numero}"]`);
+      if (numeroDiv) {
+        numeroDiv.classList.add('pago');
+        numeroDiv.classList.remove('reservado');
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao marcar como pago:', error);
+  }
 }
 
-function excluirNumero(numero) {
-  delete numerosReservados[numero];
-  atualizarAreaAdmin();
-  atualizarNumeroDiv(numero);
-  atualizarRifaContainer();
-  salvarDados();
+async function excluirNumero(numero) {
+  try {
+    await fetch(`http://localhost:3000/reservas/${numero}`, { method: 'DELETE' });
+    await carregarReservas();
+  } catch (error) {
+    console.error('Erro ao excluir número:', error);
+  }
 }
 
 function atualizarAreaAdmin() {
   const tabelaReservas = document.getElementById('tabela-reservas');
-  tabelaReservas.innerHTML = ''; // Limpa a tabela
-
-  // Cria o cabeçalho da tabela
+  tabelaReservas.innerHTML = '';
   let cabecalho = tabelaReservas.createTHead();
   let linhaCabecalho = cabecalho.insertRow();
   let thNumero = document.createElement('th');
   let thNome = document.createElement('th');
-  let thPago = document.createElement('th'); // Nova coluna para Pago
-  let thAcoes = document.createElement('th'); // Nova coluna para Ações
+  let thPago = document.createElement('th');
+  let thAcoes = document.createElement('th');
   thNumero.textContent = 'Número';
   thNome.textContent = 'Nome';
   thPago.textContent = 'Pago';
@@ -186,28 +201,26 @@ function atualizarAreaAdmin() {
   linhaCabecalho.appendChild(thPago);
   linhaCabecalho.appendChild(thAcoes);
 
-  // Preenche a tabela com os números reservados
   for (const numero in numerosReservados) {
     if (numerosReservados.hasOwnProperty(numero)) {
       const reserva = numerosReservados[numero];
       let linha = tabelaReservas.insertRow();
       let celulaNumero = linha.insertCell();
       let celulaNome = linha.insertCell();
-      let celulaPago = linha.insertCell(); // Celula para o status de pagamento
-      let celulaAcoes = linha.insertCell(); // Celula para os botões de ação
+      let celulaPago = linha.insertCell();
+      let celulaAcoes = linha.insertCell();
 
       celulaNumero.textContent = numero;
       celulaNome.textContent = reserva.nome;
 
-      // Botão para marcar como pago/não pago
       const btnPago = document.createElement('button');
       btnPago.textContent = reserva.pago ? 'Não Pago' : 'Pago';
+      btnPago.style.backgroundColor = reserva.pago ? 'green' : ''; // Muda a cor para verde
       btnPago.addEventListener('click', function() {
         marcarComoPago(numero);
       });
       celulaPago.appendChild(btnPago);
 
-      // Botão para excluir número
       const btnExcluir = document.createElement('button');
       btnExcluir.textContent = 'Excluir';
       btnExcluir.addEventListener('click', function() {
@@ -223,19 +236,19 @@ function atualizarNumeroDiv(numero) {
   if (numeroDiv) {
     numeroDiv.classList.remove('reservado');
     numeroDiv.classList.remove('selecionado');
-    numeroDiv.classList.remove('pago'); // Remove a classe pago
-
-    numeroDiv.innerHTML = numero; // Limpa o conteúdo
+    numeroDiv.classList.remove('pago');
+    numeroDiv.innerHTML = numero;
 
     if (numerosReservados[numero]) {
       numeroDiv.classList.add('reservado');
       if (numerosReservados[numero].pago) {
-        numeroDiv.classList.add('pago'); // Adiciona a classe pago se estiver pago
+        numeroDiv.classList.add('pago');
+      } else {
+        numeroDiv.style.backgroundColor = '#f0ad4e'; // Cor para número reservado, mas não pago
       }
     }
 
-    // Adiciona o evento de clique novamente, se o número não estiver reservado
-    numeroDiv.removeEventListener('click', function() {}); // Remove o listener existente
+    numeroDiv.removeEventListener('click', function() {});
     if (!numerosReservados[numero]) {
       numeroDiv.addEventListener('click', function() {
         selecionarNumero(numero);
@@ -244,62 +257,10 @@ function atualizarNumeroDiv(numero) {
   }
 }
 
-function atualizarRifaContainer() {
-  const rifaContainer = document.getElementById('rifa-container');
-  rifaContainer.innerHTML = '';
-
-  let reservasPorNome = {};
-
-  // Agrupa os números reservados por nome
-  for (const numero in numerosReservados) {
-    if (numerosReservados.hasOwnProperty(numero)) {
-      const reserva = numerosReservados[numero];
-      if (!reservasPorNome[reserva.nome]) {
-        reservasPorNome[reserva.nome] = [];
-      }
-      reservasPorNome[reserva.nome].push({ numero: numero, pago: reserva.pago });
-    }
-  }
-
-  // Para cada número na rifa
-  for (let i = 0; i < 100; i++) {
-    const numeroFormatado = i.toString().padStart(2, '0');
-    const numeroDiv = document.createElement('div');
-    numeroDiv.classList.add('numero');
-    numeroDiv.dataset.numero = numeroFormatado;
-    numeroDiv.textContent = numeroFormatado;
-
-    // Verifica se o número está reservado
-    let reservado = false;
-    for (const nome in reservasPorNome) {
-      const numeros = reservasPorNome[nome];
-      const numeroReservado = numeros.find(n => n.numero === numeroFormatado);
-      if (numeroReservado) {
-        reservado = true;
-        numeroDiv.classList.add('reservado');
-        if (numeroReservado.pago) {
-          numeroDiv.classList.add('pago');
-        }
-        numeroDiv.textContent = numeroFormatado; // Garante que o número seja exibido
-
-        const nomeSpan = document.createElement('span');
-        nomeSpan.textContent = nome;
-        numeroDiv.appendChild(nomeSpan);
-        break; // Não precisa verificar outros nomes
-      }
-    }
-
-    if (!reservado) {
-      numeroDiv.addEventListener('click', function() {
-        selecionarNumero(numeroFormatado);
-      });
-    }
-
-    rifaContainer.appendChild(numeroDiv);
-  }
-}
-
 function salvarDados() {
-  localStorage.setItem('numerosReservados', JSON.stringify(numerosReservados));
-  localStorage.setItem('adminLogado', JSON.stringify(adminLogado));
+  if (adminLogado) {
+    localStorage.setItem('adminLogado', 'true');
+  } else {
+    localStorage.removeItem('adminLogado');
+  }
 }
