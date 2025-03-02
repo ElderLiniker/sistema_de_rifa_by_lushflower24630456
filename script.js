@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 async function carregarReservas() {
   try {
-    const response = await fetch('https://rifa-api-kappa.vercel.app/');
+    const response = await fetch('http://localhost:3000/reservas');
     const data = await response.json();
     numerosReservados = {};
     data.forEach(reserva => {
@@ -86,7 +86,7 @@ async function reservarNumeros() {
   }
 
   try {
-    const response = await fetch('https://rifa-api-kappa.vercel.app/', {
+    const response = await fetch('http://localhost:3000/reservas', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ numeros, nome }),
@@ -120,7 +120,7 @@ function fazerLoginAdmin() {
   const senha = document.getElementById('senha-admin').value;
 
   // Verificar a senha através de uma requisição de API
-  fetch('https://rifa-api-kappa.vercel.app/', {
+  fetch('http://localhost:3000/admin/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ senha }),
@@ -160,7 +160,7 @@ function limparRifa() {
 
 async function marcarComoPago(numero) {
   try {
-    const response = await fetch(`https://rifa-api-kappa.vercel.app/`, { method: 'PUT' });
+    const response = await fetch(`http://localhost:3000/reservas/${numero}/pago`, { method: 'PUT' });
     if (response.ok) {
       // Atualiza a interface para refletir que o número foi marcado como pago
       const numeroDiv = document.querySelector(`.numero[data-numero="${numero}"]`);
@@ -176,7 +176,7 @@ async function marcarComoPago(numero) {
 
 async function excluirNumero(numero) {
   try {
-    await fetch(`https://rifa-api-kappa.vercel.app/`, { method: 'DELETE' });
+    await fetch(`http://localhost:3000/reservas/${numero}`, { method: 'DELETE' });
     await carregarReservas();
   } catch (error) {
     console.error('Erro ao excluir número:', error);
