@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 async function carregarReservas() {
   try {
-    const response = await fetch('https://rifa-api-kappa.vercel.app/reservas');
+    const response = await fetch('https://rifa-api-spxw.onrender.com');
     const data = await response.json();
     numerosReservados = {};
     data.forEach(reserva => {
@@ -86,7 +86,7 @@ async function reservarNumeros() {
   }
 
   try {
-    const response = await fetch('https://rifa-api-kappa.vercel.app/reservas', {
+    const response = await fetch('https://rifa-api-spxw.onrender.com', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ numeros, nome }),
@@ -120,7 +120,7 @@ function fazerLoginAdmin() {
   const senha = document.getElementById('senha-admin').value;
 
   // Verificar a senha através de uma requisição de API
-  fetch('https://rifa-api-kappa.vercel.app/admin/login', {
+  fetch('https://rifa-api-spxw.onrender.com', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ senha }),
@@ -148,19 +148,29 @@ function sairAdmin() {
   salvarDados();
 }
 
-function limparRifa() {
+async function limparRifa() {
   if (confirm('Tem certeza que deseja limpar toda a rifa?')) {
-    numerosReservados = {};
-    gerarRifa();
-    atualizarAreaAdmin();
-    atualizarRifaContainer();
-    salvarDados();
+    try {
+      const response = await fetch('https://rifa-api-spxw.onrender.com', { method: 'DELETE' });
+      if (response.ok) {
+        numerosReservados = {}; // Limpar os números reservados no frontend
+        gerarRifa(); // Regerar a rifa
+        atualizarAreaAdmin(); // Atualizar a área administrativa
+        atualizarRifaContainer(); // Atualizar a interface de números
+        alert('Rifa limpa com sucesso!');
+      } else {
+        alert('Erro ao limpar a rifa.');
+      }
+    } catch (error) {
+      console.error('Erro ao limpar a rifa:', error);
+    }
   }
 }
 
+
 async function marcarComoPago(numero) {
   try {
-    const response = await fetch(`https://rifa-api-kappa.vercel.app/reservas/${numero}/pago`, { method: 'PUT' });
+    const response = await fetch(`https://rifa-api-spxw.onrender.com`, { method: 'PUT' });
     if (response.ok) {
       // Atualiza a interface para refletir que o número foi marcado como pago
       const numeroDiv = document.querySelector(`.numero[data-numero="${numero}"]`);
@@ -173,10 +183,30 @@ async function marcarComoPago(numero) {
     console.error('Erro ao marcar como pago:', error);
   }
 }
+async function marcarComoNaoPago(numero) {
+  try {
+    const response = await fetch(`https://rifa-api-spxw.onrender.com`, { method: 'PUT' });
+
+    if (response.ok) {
+      // Atualiza a interface para refletir que o número foi marcado como não pago
+      const numeroDiv = document.querySelector(`.numero[data-numero="${numero}"]`);
+      if (numeroDiv) {
+        numeroDiv.classList.remove('pago');  // Remove a classe "pago"
+        numeroDiv.classList.add('reservado'); // Adiciona a classe "reservado"
+      }
+    } else {
+      alert('Erro ao marcar como não pago');
+    }
+  } catch (error) {
+    console.error('Erro ao marcar como não pago:', error);
+  }
+}
+
+
 
 async function excluirNumero(numero) {
   try {
-    await fetch(`https://rifa-api-kappa.vercel.app/reservas/${numero}`, { method: 'DELETE' });
+    await fetch(`https://rifa-api-spxw.onrender.com`, { method: 'DELETE' });
     await carregarReservas();
   } catch (error) {
     console.error('Erro ao excluir número:', error);
@@ -186,16 +216,19 @@ async function excluirNumero(numero) {
 function atualizarAreaAdmin() {
   const tabelaReservas = document.getElementById('tabela-reservas');
   tabelaReservas.innerHTML = '';
+  
   let cabecalho = tabelaReservas.createTHead();
   let linhaCabecalho = cabecalho.insertRow();
   let thNumero = document.createElement('th');
   let thNome = document.createElement('th');
   let thPago = document.createElement('th');
   let thAcoes = document.createElement('th');
+  
   thNumero.textContent = 'Número';
   thNome.textContent = 'Nome';
   thPago.textContent = 'Pago';
   thAcoes.textContent = 'Ações';
+  
   linhaCabecalho.appendChild(thNumero);
   linhaCabecalho.appendChild(thNome);
   linhaCabecalho.appendChild(thPago);
@@ -214,10 +247,14 @@ function atualizarAreaAdmin() {
       celulaNome.textContent = reserva.nome;
 
       const btnPago = document.createElement('button');
-      btnPago.textContent = reserva.pago ? 'Não Pago' : 'Pago';
+      btnPago.textContent = reserva.pago ? 'Marcar como Não Pago' : 'Marcar como Pago';
       btnPago.style.backgroundColor = reserva.pago ? 'green' : ''; // Muda a cor para verde
       btnPago.addEventListener('click', function() {
-        marcarComoPago(numero);
+        if (reserva.pago) {
+          marcarComoNaoPago(numero);  // Marca como não pago
+        } else {
+          marcarComoPago(numero);  // Marca como pago
+        }
       });
       celulaPago.appendChild(btnPago);
 
@@ -230,6 +267,7 @@ function atualizarAreaAdmin() {
     }
   }
 }
+
 
 function atualizarNumeroDiv(numero) {
   const numeroDiv = document.querySelector(`.numero[data-numero="${numero}"]`);
@@ -264,3 +302,4 @@ function salvarDados() {
     localStorage.removeItem('adminLogado');
   }
 }
+
