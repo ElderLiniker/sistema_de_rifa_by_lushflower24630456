@@ -53,7 +53,7 @@ h3 {
   border-radius: 5px;
   word-wrap: break-word; /* Garante a quebra de linha */
   word-break: break-all; /* Quebra palavras longas */
-  min-width: 50px; /* Aumentando a largura mínima das células */
+  min-width: 80px; /* Aumentando a largura mínima das células */
 }
 
 .numero:hover {
@@ -184,7 +184,7 @@ input::placeholder {
     padding: 8px;
     word-wrap: break-word; /* Garante a quebra de linha */
     word-break: break-all; /* Quebra palavras longas */
-    min-width: 60px;
+    min-width: 80px;
     min-height: 20px; /* Evita que o nome quebre demais */
   }
 
