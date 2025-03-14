@@ -189,7 +189,7 @@ input::placeholder{
 
 
 /* Responsividade */
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
   #rifa-container {
     grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
   }
