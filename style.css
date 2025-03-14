@@ -47,40 +47,19 @@ h3 {
 }
 
 #rifa-container {
+  
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-  gap: 20px;
-  max-width: 90%;
-  margin: 20px auto;
-  background-color: #eeecf5;
-  height: auto;
-  padding: 20px;
-  border-radius: 20px;
-  padding-right: 25px;
- 
-
-  && h1{
-    color: #fff;
-    margin: 20px 20px;
-    display: block;
-  }
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* Definindo uma grid flexível */
+  gap: 10px;
 
 }
 
 .numero {
-  border: 1px solid #ccc;
-  padding: 12px;
+  padding: 15px;
   text-align: center;
-  cursor: pointer;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  font-weight: bold;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60px;
-  width: 50px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
   
 }
 
@@ -188,31 +167,29 @@ input::placeholder{
 }
 
 
-/* Responsividade */
-@media screen and (max-width: 768px) {
+@media (max-width: 768px) {
   #rifa-container {
+    width: 100%;
     grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    padding: 10px;
   }
-  .information{
-    width: 90%;
+
+  .information {
+    width: 100%;
   }
+
   h1 {
-    font-size: 20px;
+    font-size: 18px;
     padding: 8px;
   }
-  .information,
-  #admin-login,
-  #admin-area,
-  #reserva-form {
-    padding: 15px;
+
+  .numero {
+    font-size: 12px; /* Ajuste o tamanho dos números */
+    padding: 8px;
   }
-  .div-logo img {
-    max-width: 300px;
-  }
-  .admin01,
-  button {
-    font-size: 14px;
-    padding: 12px;
-    max-width: 200px;
+
+  .admin01 {
+    font-size: 12px;
+    padding: 10px;
   }
 }
