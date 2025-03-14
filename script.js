@@ -3,9 +3,11 @@ document.addEventListener('DOMContentLoaded', async function () {
   gerarRifa();
 });
 
+const apiUrl = 'https://rifa-api-spxw.onrender.com'; // Definindo a URL da API pública
+
 async function carregarReservas() {
   try {
-    const response = await fetch('http://localhost:3000/reservas');
+    const response = await fetch(`${apiUrl}/reservas`);
     const data = await response.json();
     numerosReservados = {};
     data.forEach(reserva => {
@@ -86,7 +88,7 @@ async function reservarNumeros() {
   }
 
   try {
-    const response = await fetch('http://localhost:3000/reservas', {
+    const response = await fetch(`${apiUrl}/reservas`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ numeros, nome }),
@@ -120,7 +122,7 @@ function fazerLoginAdmin() {
   const senha = document.getElementById('senha-admin').value;
 
   // Verificar a senha através de uma requisição de API
-  fetch('http://localhost:3000/admin/login', {
+  fetch(`${apiUrl}/admin/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ senha }),
@@ -151,7 +153,7 @@ function sairAdmin() {
 async function limparRifa() {
   if (confirm('Tem certeza que deseja limpar toda a rifa?')) {
     try {
-      const response = await fetch('http://localhost:3000/reservas', { method: 'DELETE' });
+      const response = await fetch(`${apiUrl}/reservas`, { method: 'DELETE' });
       if (response.ok) {
         numerosReservados = {}; // Limpar os números reservados no frontend
         gerarRifa(); // Regerar a rifa
@@ -170,7 +172,7 @@ async function limparRifa() {
 
 async function marcarComoPago(numero) {
   try {
-    const response = await fetch(`http://localhost:3000/reservas/${numero}/pago`, { method: 'PUT' });
+    const response = await fetch(`${apiUrl}/reservas/${numero}/pago`, { method: 'PUT' });
     if (response.ok) {
       // Atualiza a interface para refletir que o número foi marcado como pago
       const numeroDiv = document.querySelector(`.numero[data-numero="${numero}"]`);
@@ -185,7 +187,7 @@ async function marcarComoPago(numero) {
 }
 async function marcarComoNaoPago(numero) {
   try {
-    const response = await fetch(`http://localhost:3000/reservas/${numero}/nao-pago`, { method: 'PUT' });
+    const response = await fetch(`${apiUrl}/reservas/${numero}/nao-pago`, { method: 'PUT' });
 
     if (response.ok) {
       // Atualiza a interface para refletir que o número foi marcado como não pago
@@ -206,7 +208,7 @@ async function marcarComoNaoPago(numero) {
 
 async function excluirNumero(numero) {
   try {
-    await fetch(`http://localhost:3000/reservas/${numero}`, { method: 'DELETE' });
+    await fetch(`${apiUrl}/reservas/${numero}`, { method: 'DELETE' });
     await carregarReservas();
   } catch (error) {
     console.error('Erro ao excluir número:', error);
@@ -286,7 +288,7 @@ function atualizarNumeroDiv(numero) {
       }
     }
 
-    numeroDiv.removeEventListener('click', function() {});
+    numeroDiv.removeEventListener('click', function() {}); 
     if (!numerosReservados[numero]) {
       numeroDiv.addEventListener('click', function() {
         selecionarNumero(numero);
@@ -302,4 +304,3 @@ function salvarDados() {
     localStorage.removeItem('adminLogado');
   }
 }
-
