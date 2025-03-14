@@ -169,13 +169,14 @@ input::placeholder{
 
 @media (max-width: 768px) {
   #rifa-container {
-    width: 100%;
+    width: 95%;
     grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
     padding: 10px;
   }
 
   .information {
-    width: 100%;
+    width: 80%;
+    
   }
 
   h1 {
