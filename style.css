@@ -20,11 +20,6 @@ body {
   height: auto;
   border-radius: 30px;
 }
-p{
-
-}
-
-
 
 h3 {
   padding: 20px;
@@ -42,16 +37,12 @@ h3 {
   justify-content: center;
   align-items: center;
   flex-direction: column;
-
-  
 }
 
 #rifa-container {
-  
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* Definindo uma grid flexível */
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Aumentando a largura mínima */
   gap: 10px;
-
 }
 
 .numero {
@@ -60,7 +51,9 @@ h3 {
   background-color: #f0f0f0;
   border: 1px solid #ccc;
   border-radius: 5px;
-  
+  word-wrap: break-word; /* Garante a quebra de linha */
+  word-break: break-all; /* Quebra palavras longas */
+  min-width: 50px; /* Aumentando a largura mínima das células */
 }
 
 .numero:hover {
@@ -98,6 +91,11 @@ input {
   width: 90%;
   max-width: 400px;
   margin-bottom: 10px;
+  font-size: 18px; /* Ajustando o tamanho da fonte dos inputs */
+}
+
+input::placeholder {
+  font-size: 16px;
 }
 
 #admin-login,
@@ -151,32 +149,29 @@ table {
   border-radius: 10px;
   width: 100%;
 }
-label{
+
+label {
   font-size: 20px;
 }
-input{
+
+input {
   font-size: 20px;
- 
-
-
 }
-input::placeholder{
+
+input::placeholder {
   margin-left: 200px;
   padding: 20px;
-
 }
-
 
 @media (max-width: 768px) {
   #rifa-container {
     width: 95%;
-    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Aumentando a largura mínima também para dispositivos menores */
     padding: 10px;
   }
 
   .information {
     width: 80%;
-    
   }
 
   h1 {
@@ -187,10 +182,29 @@ input::placeholder{
   .numero {
     font-size: 12px; /* Ajuste o tamanho dos números */
     padding: 8px;
+    word-wrap: break-word; /* Garante a quebra de linha */
+    word-break: break-all; /* Quebra palavras longas */
+    min-width: 60px;
+    min-height: 20px; /* Evita que o nome quebre demais */
   }
 
   .admin01 {
     font-size: 12px;
     padding: 10px;
+  }
+
+  input {
+    font-size: 16px; /* Ajustando o tamanho da fonte nos campos de texto */
+  }
+
+  input::placeholder {
+    font-size: 14px; /* Ajuste o placeholder */
+  }
+
+  /* Ajustando os inputs dentro do formulário */
+  #reserva-form,
+  #admin-login,
+  #admin-area {
+    font-size: 16px;
   }
 }
