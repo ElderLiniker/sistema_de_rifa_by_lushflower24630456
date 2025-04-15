@@ -6,7 +6,7 @@
   gerarRifa();
 });
 
-const apiUrl = 'rifa-api-production.up.railway.app'; // Definindo a URL da API pública
+const apiUrl = 'https://rifa-api-production.up.railway.app'; // Definindo a URL da API pública
 
 async function carregarReservas() {
   try {
