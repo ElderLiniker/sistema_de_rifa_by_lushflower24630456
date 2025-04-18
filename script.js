@@ -1,5 +1,12 @@
 
-document.addEventListener('DOMContentLoaded', async function () {
+const apiUrl = 'https://rifa-api-production.up.railway.app';
+
+let numerosReservados = {};
+let numerosSelecionados = [];
+let adminLogado = false;
+let senhaAdmin = '';
+
+document.addEventListener('DOMContentLoaded', async () => {
   if (localStorage.getItem('adminLogado') === 'true') {
     adminLogado = true;
     senhaAdmin = localStorage.getItem('senhaAdmin') || '';
@@ -8,13 +15,6 @@ document.addEventListener('DOMContentLoaded', async function () {
   await carregarReservas();
   gerarRifa();
 });
-
-const apiUrl = 'https://rifa-api-production.up.railway.app';
-
-let numerosReservados = {};
-let numerosSelecionados = [];
-let adminLogado = false;
-let senhaAdmin = '';
 
 async function carregarReservas() {
   try {
@@ -25,6 +25,7 @@ async function carregarReservas() {
       numerosReservados[reserva.numero] = { nome: reserva.nome, pago: reserva.pago };
     });
     atualizarRifaContainer();
+    if (adminLogado) atualizarAreaAdmin();
   } catch (error) {
     console.error('Erro ao carregar reservas:', error);
   }
@@ -34,29 +35,24 @@ function gerarRifa() {
   const rifaContainer = document.getElementById('rifa-container');
   rifaContainer.innerHTML = '';
   for (let i = 0; i < 100; i++) {
+    const num = i.toString().padStart(2, '0');
     const numeroDiv = document.createElement('div');
     numeroDiv.classList.add('numero');
-    numeroDiv.dataset.numero = i.toString().padStart(2, '0');
-    numeroDiv.textContent = i.toString().padStart(2, '0');
+    numeroDiv.dataset.numero = num;
 
-    if (numerosReservados[i.toString().padStart(2, '0')]) {
-      const nomePessoa = numerosReservados[i.toString().padStart(2, '0')].nome;
-      numeroDiv.textContent += ` - ${nomePessoa}`;
-    }
-
-    if (numerosReservados[i.toString().padStart(2, '0')]) {
+    if (numerosReservados[num]) {
+      numeroDiv.textContent = `${num} - ${numerosReservados[num].nome}`;
       numeroDiv.classList.add('reservado');
-      if (numerosReservados[i.toString().padStart(2, '0')].pago) {
+      if (numerosReservados[num].pago) {
         numeroDiv.classList.add('pago');
       }
+    } else {
+      numeroDiv.textContent = num;
     }
 
-    numeroDiv.addEventListener('click', function() {
-      selecionarNumero(i.toString().padStart(2, '0'));
-    });
+    numeroDiv.addEventListener('click', () => selecionarNumero(num));
     rifaContainer.appendChild(numeroDiv);
   }
-  atualizarRifaContainer();
 }
 
 function selecionarNumero(numero) {
@@ -66,11 +62,11 @@ function selecionarNumero(numero) {
   }
 
   if (numerosSelecionados.includes(numero)) {
-    numerosSelecionados = numerosSelecionados.filter(num => num !== numero);
-    document.querySelector(`.numero[data-numero="${numero}"]`)?.classList.remove('selecionado');
+    numerosSelecionados = numerosSelecionados.filter(n => n !== numero);
+    document.querySelector(`.numero[data-numero="${numero}"]`).classList.remove('selecionado');
   } else {
     numerosSelecionados.push(numero);
-    document.querySelector(`.numero[data-numero="${numero}"]`)?.classList.add('selecionado');
+    document.querySelector(`.numero[data-numero="${numero}"]`).classList.add('selecionado');
   }
 
   document.getElementById('numeros').value = numerosSelecionados.join(', ');
@@ -81,10 +77,7 @@ async function reservarNumeros() {
   const nome = document.getElementById('nome').value;
   let numeros = document.getElementById('numeros').value.split(',').map(num => num.trim());
 
-  if (!nome) {
-    alert('Por favor, insira seu nome.');
-    return;
-  }
+  if (!nome) return alert('Por favor, insira seu nome.');
 
   try {
     const response = await fetch(`${apiUrl}/reservas`, {
@@ -96,6 +89,7 @@ async function reservarNumeros() {
     if (response.ok) {
       alert('Reserva feita com sucesso!');
       await carregarReservas();
+      fecharFormulario();
     } else {
       alert('Erro ao reservar números.');
     }
@@ -122,27 +116,20 @@ function fazerLoginAdmin() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ senha }),
   })
-  .then(response => response.json())
+  .then(res => res.json())
   .then(data => {
-    console.log('Resposta do login:', data); // 👈 VERIFICAR AQUI
-
     if (data.autorizado) {
       adminLogado = true;
       senhaAdmin = senha;
       document.getElementById('admin-login').style.display = 'none';
       document.getElementById('admin-area').style.display = 'block';
-      atualizarAreaAdmin();
       salvarDados();
+      carregarReservas();
     } else {
       alert('Senha incorreta.');
     }
-  })
-  .catch(error => {
-    console.error('Erro ao fazer login:', error);
   });
 }
-
-
 
 function sairAdmin() {
   adminLogado = false;
@@ -160,10 +147,7 @@ async function limparRifa() {
         body: JSON.stringify({ senha: senhaAdmin }),
       });
       if (response.ok) {
-        numerosReservados = {};
-        gerarRifa();
-        atualizarAreaAdmin();
-        atualizarRifaContainer();
+        await carregarReservas();
         alert('Rifa limpa com sucesso!');
       } else {
         alert('Erro ao limpar a rifa.');
@@ -176,14 +160,8 @@ async function limparRifa() {
 
 async function marcarComoPago(numero) {
   try {
-    const response = await fetch(`${apiUrl}/reservas/${numero}/pago`, { method: 'PUT' });
-    if (response.ok) {
-      const numeroDiv = document.querySelector(`.numero[data-numero="${numero}"]`);
-      if (numeroDiv) {
-        numeroDiv.classList.add('pago');
-        numeroDiv.classList.remove('reservado');
-      }
-    }
+    await fetch(`${apiUrl}/reservas/${numero}/pago`, { method: 'PUT' });
+    await carregarReservas();
   } catch (error) {
     console.error('Erro ao marcar como pago:', error);
   }
@@ -191,16 +169,8 @@ async function marcarComoPago(numero) {
 
 async function marcarComoNaoPago(numero) {
   try {
-    const response = await fetch(`${apiUrl}/reservas/${numero}/nao-pago`, { method: 'PUT' });
-    if (response.ok) {
-      const numeroDiv = document.querySelector(`.numero[data-numero="${numero}"]`);
-      if (numeroDiv) {
-        numeroDiv.classList.remove('pago');
-        numeroDiv.classList.add('reservado');
-      }
-    } else {
-      alert('Erro ao marcar como não pago');
-    }
+    await fetch(`${apiUrl}/reservas/${numero}/nao-pago`, { method: 'PUT' });
+    await carregarReservas();
   } catch (error) {
     console.error('Erro ao marcar como não pago:', error);
   }
@@ -208,7 +178,11 @@ async function marcarComoNaoPago(numero) {
 
 async function excluirNumero(numero) {
   try {
-    await fetch(`${apiUrl}/reservas/${numero}`, { method: 'DELETE' });
+    await fetch(`${apiUrl}/reservas/${numero}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ senha: senhaAdmin }),
+    });
     await carregarReservas();
   } catch (error) {
     console.error('Erro ao excluir número:', error);
@@ -216,32 +190,28 @@ async function excluirNumero(numero) {
 }
 
 function atualizarAreaAdmin() {
-  const tabelaReservas = document.getElementById('tabela-reservas');
-  tabelaReservas.innerHTML = '';
+  const tabela = document.getElementById('tabela-reservas');
+  tabela.innerHTML = '';
 
-  let cabecalho = tabelaReservas.createTHead();
-  let linhaCabecalho = cabecalho.insertRow();
-  ['Número', 'Nome', 'Pago', 'Ações'].forEach(titulo => {
+  const cabecalho = tabela.insertRow();
+  ['Número', 'Nome', 'Pago', 'Ações'].forEach(texto => {
     const th = document.createElement('th');
-    th.textContent = titulo;
-    linhaCabecalho.appendChild(th);
+    th.textContent = texto;
+    cabecalho.appendChild(th);
   });
 
   for (const numero in numerosReservados) {
     const reserva = numerosReservados[numero];
-    let linha = tabelaReservas.insertRow();
+    const linha = tabela.insertRow();
+
     linha.insertCell().textContent = numero;
     linha.insertCell().textContent = reserva.nome;
 
     const btnPago = document.createElement('button');
-    btnPago.textContent = reserva.pago ? 'Marcar como Não Pago' : 'Marcar como Pago';
+    btnPago.textContent = reserva.pago ? 'Não Pago' : 'Pago';
     btnPago.style.backgroundColor = reserva.pago ? 'green' : '';
     btnPago.addEventListener('click', () => {
-      if (reserva.pago) {
-        marcarComoNaoPago(numero);
-      } else {
-        marcarComoPago(numero);
-      }
+      reserva.pago ? marcarComoNaoPago(numero) : marcarComoPago(numero);
     });
     linha.insertCell().appendChild(btnPago);
 
@@ -253,37 +223,7 @@ function atualizarAreaAdmin() {
 }
 
 function atualizarRifaContainer() {
-  for (const numero in numerosReservados) {
-    atualizarNumeroDiv(numero);
-  }
-}
-function mostrarLoginAdmin() {
-  document.getElementById('admin-login').style.display = 'block';
-}
-
-
-function atualizarNumeroDiv(numero) {
-  const numeroDiv = document.querySelector(`.numero[data-numero="${numero}"]`);
-  if (numeroDiv) {
-    numeroDiv.classList.remove('reservado', 'selecionado', 'pago');
-    numeroDiv.innerHTML = numero;
-
-    if (numerosReservados[numero]) {
-      numeroDiv.classList.add('reservado');
-      if (numerosReservados[numero].pago) {
-        numeroDiv.classList.add('pago');
-      } else {
-        numeroDiv.style.backgroundColor = '#f0ad4e';
-      }
-    }
-
-    numeroDiv.removeEventListener('click', function() {});
-    if (!numerosReservados[numero]) {
-      numeroDiv.addEventListener('click', function() {
-        selecionarNumero(numero);
-      });
-    }
-  }
+  gerarRifa();
 }
 
 function salvarDados() {
@@ -296,7 +236,7 @@ function salvarDados() {
   }
 }
 
-// Configurações de rifa e prêmio com localStorage
+// Configurações
 const inforifa = document.querySelector(".info-rifa");
 const infopremio = document.querySelector(".info-premio");
 const inputvalue = document.querySelector(".inputvalue");
@@ -307,18 +247,14 @@ const inputpremio = document.querySelector(".inputpremio");
 if (localStorage.getItem("rifa")) inforifa.innerHTML = localStorage.getItem("rifa");
 if (localStorage.getItem("premio")) infopremio.innerHTML = localStorage.getItem("premio");
 
-function novarifa() {
+buttonmudar.addEventListener("click", () => {
   const valor = inputvalue.value;
   inforifa.innerHTML = valor;
   localStorage.setItem("rifa", valor);
-}
+});
 
-function novopremio() {
+buttopremio.addEventListener("click", () => {
   const valor = inputpremio.value;
   infopremio.innerHTML = valor;
   localStorage.setItem("premio", valor);
-}
-
-buttonmudar.addEventListener("click", novarifa);
-buttopremio.addEventListener("click", novopremio);
-
+});
