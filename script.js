@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', async function () {
   if (localStorage.getItem('adminLogado') === 'true') {
     adminLogado = true;
@@ -124,7 +123,7 @@ function fazerLoginAdmin() {
   })
   .then(response => response.json())
   .then(data => {
-    console.log('Resposta do login:', data); // 👈 VERIFICAR AQUI
+    console.log('Resposta do login:', data); 
 
     if (data.autorizado) {
       adminLogado = true;
@@ -141,8 +140,6 @@ function fazerLoginAdmin() {
     console.error('Erro ao fazer login:', error);
   });
 }
-
-
 
 function sairAdmin() {
   adminLogado = false;
@@ -210,6 +207,8 @@ async function excluirNumero(numero) {
   try {
     await fetch(`${apiUrl}/reservas/${numero}`, { method: 'DELETE' });
     await carregarReservas();
+    atualizarAreaAdmin();
+    gerarRifa();
   } catch (error) {
     console.error('Erro ao excluir número:', error);
   }
@@ -257,10 +256,6 @@ function atualizarRifaContainer() {
     atualizarNumeroDiv(numero);
   }
 }
-function mostrarLoginAdmin() {
-  document.getElementById('admin-login').style.display = 'block';
-}
-
 
 function atualizarNumeroDiv(numero) {
   const numeroDiv = document.querySelector(`.numero[data-numero="${numero}"]`);
@@ -321,4 +316,3 @@ function novopremio() {
 
 buttonmudar.addEventListener("click", novarifa);
 buttopremio.addEventListener("click", novopremio);
-
