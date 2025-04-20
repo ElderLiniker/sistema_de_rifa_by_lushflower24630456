@@ -1,13 +1,28 @@
-
 document.addEventListener('DOMContentLoaded', async function () {
-  if (localStorage.getItem('adminLogado') === 'true') {
-    adminLogado = true;
-    senhaAdmin = localStorage.getItem('senhaAdmin') || '';
-    document.getElementById('admin-area').style.display = 'block';
+  const adminArea = document.getElementById('admin-area');
+  const adminLogado = localStorage.getItem('adminLogado') === 'true';
+  const senhaSalva = localStorage.getItem('senhaAdmin') || '';
+
+  if (adminLogado) {
+    const resposta = await fetch('/api/verificar-admin', {
+      headers: {
+        Authorization: senhaSalva
+      }
+    });
+
+    if (resposta.ok) {
+      adminArea.style.display = 'block';
+    } else {
+      localStorage.removeItem('adminLogado');
+      localStorage.removeItem('senhaAdmin');
+      adminArea.style.display = 'none';
+    }
   }
+
   await carregarReservas();
   gerarRifa();
 });
+
 
 const apiUrl = 'https://rifa-api-production.up.railway.app';
 

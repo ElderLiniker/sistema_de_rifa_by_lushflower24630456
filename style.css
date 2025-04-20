@@ -257,7 +257,7 @@ table {
     }
 
     .mudarrifa {
-        display: flex;
+        display: none;
         flex-direction: column;
         justify-content: center;
         gap: 10px;
@@ -271,7 +271,7 @@ table {
     }
 
     .mudarpremio {
-        display: flex;
+        display: none;
         flex-direction: column;
         justify-content: center;
         gap: 10px;
