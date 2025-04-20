@@ -152,27 +152,38 @@ function sairAdmin() {
 }
 
 async function limparRifa() {
-  if (confirm('Tem certeza que deseja limpar toda a rifa?')) {
+  const senhaAdmin = localStorage.getItem("senhaAdmin");
+
+  if (!senhaAdmin) {
+    alert("Você precisa estar logado como admin para limpar a rifa.");
+    return;
+  }
+
+  if (confirm("Tem certeza que deseja limpar toda a rifa?")) {
     try {
       const response = await fetch(`${apiUrl}/reservas`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ senha: senhaAdmin }),
       });
+
+      const resultado = await response.json();
+
       if (response.ok) {
+        alert("Rifa limpa com sucesso!");
         numerosReservados = {};
-        gerarRifa();
         atualizarAreaAdmin();
         atualizarRifaContainer();
-        alert('Rifa limpa com sucesso!');
       } else {
-        alert('Erro ao limpar a rifa.');
+        alert(`Erro: ${resultado.message}`);
       }
     } catch (error) {
-      console.error('Erro ao limpar a rifa:', error);
+      console.error("Erro ao limpar a rifa:", error);
+      alert("Erro de conexão ao tentar limpar a rifa.");
     }
   }
 }
+
 
 async function marcarComoPago(numero) {
   try {
