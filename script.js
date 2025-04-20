@@ -178,26 +178,24 @@ async function marcarComoPago(numero) {
   try {
     const response = await fetch(`${apiUrl}/reservas/${numero}/pago`, { method: 'PUT' });
     if (response.ok) {
-      const numeroDiv = document.querySelector(`.numero[data-numero="${numero}"]`);
-      if (numeroDiv) {
-        numeroDiv.classList.add('pago');
-        numeroDiv.classList.remove('reservado');
-      }
+      numerosReservados[numero].pago = true; // 👈 atualiza no objeto
+      atualizarNumeroDiv(numero);
+      atualizarAreaAdmin();
     }
   } catch (error) {
     console.error('Erro ao marcar como pago:', error);
   }
 }
 
+
+
 async function marcarComoNaoPago(numero) {
   try {
     const response = await fetch(`${apiUrl}/reservas/${numero}/nao-pago`, { method: 'PUT' });
     if (response.ok) {
-      const numeroDiv = document.querySelector(`.numero[data-numero="${numero}"]`);
-      if (numeroDiv) {
-        numeroDiv.classList.remove('pago');
-        numeroDiv.classList.add('reservado');
-      }
+      numerosReservados[numero].pago = false; // 👈 atualiza no objeto
+      atualizarNumeroDiv(numero);
+      atualizarAreaAdmin();
     } else {
       alert('Erro ao marcar como não pago');
     }
@@ -208,12 +206,26 @@ async function marcarComoNaoPago(numero) {
 
 async function excluirNumero(numero) {
   try {
-    await fetch(`${apiUrl}/reservas/${numero}`, { method: 'DELETE' });
-    await carregarReservas();
+    const response = await fetch(`${apiUrl}/reservas/${numero}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ senha: senhaAdmin }) // 👈 Manda a senha!
+    });
+
+    if (response.ok) {
+      await carregarReservas();
+      atualizarAreaAdmin();
+    } else {
+      const erro = await response.json();
+      alert(erro.message || 'Erro ao excluir número');
+    }
   } catch (error) {
     console.error('Erro ao excluir número:', error);
   }
 }
+
+
+
 
 function atualizarAreaAdmin() {
   const tabelaReservas = document.getElementById('tabela-reservas');
@@ -269,17 +281,19 @@ function atualizarNumeroDiv(numero) {
     numeroDiv.innerHTML = numero;
 
     if (numerosReservados[numero]) {
+      const nomePessoa = numerosReservados[numero].nome;
+      numeroDiv.innerHTML += ` - ${nomePessoa}`;
+      
       numeroDiv.classList.add('reservado');
       if (numerosReservados[numero].pago) {
         numeroDiv.classList.add('pago');
-      } else {
-        numeroDiv.style.backgroundColor = '#f0ad4e';
       }
     }
 
-    numeroDiv.removeEventListener('click', function() {});
+    numeroDiv.removeEventListener('click', function () { });
+
     if (!numerosReservados[numero]) {
-      numeroDiv.addEventListener('click', function() {
+      numeroDiv.addEventListener('click', function () {
         selecionarNumero(numero);
       });
     }

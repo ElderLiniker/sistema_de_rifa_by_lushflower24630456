@@ -9,6 +9,25 @@ body {
     animation: fadeIn 1s ease-out;
 }
 
+/* Classe para números pagos */
+.numero.pago {
+    background-color: green;
+    color: white;
+    text-decoration: line-through; /* Opcional: para riscar o número */
+  }
+  
+  /* Classe para números reservados */
+  .numero.reservado {
+    background-color: yellow;
+    color: black;
+  }
+  
+  /* Classe para números não pagos (cinza) */
+  .numero.nao-pago {
+    background-color: gray;
+    color: white;
+  }
+  
 /* Animação de fade-in */
 @keyframes fadeIn {
     0% { opacity: 0; }
@@ -106,11 +125,11 @@ h3 {
 }
 
 .numero.pago {
-    background-color: #81c784;
-    color: #fff;
-    cursor: not-allowed;
-    box-shadow: none;
-}
+    background-color: green;
+    color: white;
+    font-weight: bold;
+  }
+  
 
 .admin01,
 button {
@@ -193,7 +212,8 @@ table {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 .mudarpremio{
-    display: flex;
+    display: 
+    none;
     flex-direction: column;
     gap: 10px;
     margin: 25px auto;
@@ -207,7 +227,7 @@ table {
     }
 }
 .mudarrifa{
-    display: flex;
+    display: none;
     flex-direction: column;
     gap: 10px;
     margin: 25px auto;
