@@ -344,21 +344,35 @@ const buttonmudar = document.querySelector(".button-mudar");
 const buttopremio = document.querySelector(".button-premio");
 const inputpremio = document.querySelector(".inputpremio");
 
-if (localStorage.getItem("rifa")) inforifa.innerHTML = localStorage.getItem("rifa");
-if (localStorage.getItem("premio")) infopremio.innerHTML = localStorage.getItem("premio");
-
 function novarifa() {
   const valor = inputvalue.value;
-  inforifa.innerHTML = valor;
-  localStorage.setItem("rifa", valor);
+
+  fetch("/api/rifa", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ valor })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.rifa) {
+      inforifa.innerHTML = data.rifa;
+    }
+  });
 }
 
 function novopremio() {
   const valor = inputpremio.value;
-  infopremio.innerHTML = valor;
-  localStorage.setItem("premio", valor);
-}
 
-buttonmudar.addEventListener("click", novarifa);
-buttopremio.addEventListener("click", novopremio);
+  fetch("/api/premio", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ valor })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.premio) {
+      infopremio.innerHTML = data.premio;
+    }
+  });
+}
 
