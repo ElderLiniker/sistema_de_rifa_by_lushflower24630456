@@ -213,7 +213,7 @@ table {
 }
 .mudarpremio{
     display: 
-    block;
+    none;
     flex-direction: column;
     gap: 10px;
     margin: 25px auto;
@@ -227,7 +227,7 @@ table {
     }
 }
 .mudarrifa{
-    display: block;
+    display: none;
     flex-direction: column;
     gap: 10px;
     margin: 25px auto;
