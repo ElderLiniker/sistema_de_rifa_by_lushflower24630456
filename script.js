@@ -336,35 +336,29 @@ function salvarDados() {
   }
 }
 
+// Configurações de rifa e prêmio com localStorage
 const inforifa = document.querySelector(".info-rifa");
+const infopremio = document.querySelector(".info-premio");
 const inputvalue = document.querySelector(".inputvalue");
 const buttonmudar = document.querySelector(".button-mudar");
+const buttopremio = document.querySelector(".button-premio");
+const inputpremio = document.querySelector(".inputpremio");
 
-async function novarifa() {
-  const valor = inputvalue.value.trim();
-  if (!valor) {
-    alert("Digite um nome válido para a rifa.");
-    return;
-  }
+if (localStorage.getItem("rifa")) inforifa.innerHTML = localStorage.getItem("rifa");
+if (localStorage.getItem("premio")) infopremio.innerHTML = localStorage.getItem("premio");
 
-  try {
-    const response = await fetch("/api/rifa", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ rifa: valor }),
-    });
+function novarifa() {
+  const valor = inputvalue.value;
+  inforifa.innerHTML = valor;
+  localStorage.setItem("rifa", valor);
+}
 
-    const data = await response.json();
-
-    if (!response.ok) throw new Error(data.message || "Erro ao salvar rifa");
-
-    inforifa.textContent = valor; // Atualiza o texto na tela
-    alert(data.message); // Exibe mensagem de sucesso
-  } catch (error) {
-    alert("Erro: " + error.message);
-  }
+function novopremio() {
+  const valor = inputpremio.value;
+  infopremio.innerHTML = valor;
+  localStorage.setItem("premio", valor);
 }
 
 buttonmudar.addEventListener("click", novarifa);
+buttopremio.addEventListener("click", novopremio);
+
