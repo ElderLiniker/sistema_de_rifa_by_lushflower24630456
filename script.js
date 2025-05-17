@@ -337,27 +337,28 @@ function salvarDados() {
 }
 
 // Configurações de rifa e prêmio com localStorage
-const inforifa    = document.querySelector('.info-rifa');
-const infopremio  = document.querySelector('.info-premio');
-const inputvalue  = document.querySelector('.inputvalue');
-const inputpremio = document.querySelector('.inputpremio');
+const inforifa = document.querySelector(".info-rifa");
+const infopremio = document.querySelector(".info-premio");
+const inputvalue = document.querySelector(".inputvalue");
+const buttonmudar = document.querySelector(".button-mudar");
+const buttopremio = document.querySelector(".button-premio");
+const inputpremio = document.querySelector(".inputpremio");
 
-async function carregaConfig() {
-  try {
-    const res = await fetch(`${apiUrl}/configuracoes`);
-    const { rifa, premio } = await res.json();
-    if (rifa)   setCampo('rifa', rifa);
-    if (premio) setCampo('premio', premio);
-  } catch {
-    // offline → cache local
-    if (localStorage.rifa)   setCampo('rifa',   localStorage.rifa);
-    if (localStorage.premio) setCampo('premio', localStorage.premio);
-  }
-}
-function setCampo(chave, valor) {
-  if (chave === 'rifa')   inforifa.textContent   = valor;
-  if (chave === 'premio') infopremio.textContent = valor;
-  localStorage[chave] = valor;
+if (localStorage.getItem("rifa")) inforifa.innerHTML = localStorage.getItem("rifa");
+if (localStorage.getItem("premio")) infopremio.innerHTML = localStorage.getItem("premio");
+
+function novarifa() {
+  const valor = inputvalue.value;
+  inforifa.innerHTML = valor;
+  localStorage.setItem("rifa", valor);
 }
 
+function novopremio() {
+  const valor = inputpremio.value;
+  infopremio.innerHTML = valor;
+  localStorage.setItem("premio", valor);
+}
+
+buttonmudar.addEventListener("click", novarifa);
+buttopremio.addEventListener("click", novopremio);
 
