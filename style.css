@@ -264,6 +264,12 @@ table {
     }
 }
 
+.code{
+
+    width: 200px;
+    height: 200px;
+}
+
 
 
 /* Responsividade para a tabela */
